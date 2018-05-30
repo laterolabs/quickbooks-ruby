@@ -3,18 +3,12 @@ module Quickbooks
   module Service
     class Reports < BaseService
 
-      def url_for_query(which_report = 'BalanceSheet', date_macro = 'This Fiscal Year-to-date', options = {})
-        if(options == {})
-          return "#{url_for_base}/reports/#{which_report}?date_macro=#{URI.encode_www_form_component(date_macro)}"
-        else
-          options_string = ""
-          options.each do |key, value|
-            options_string += "#{key}=#{value}&"
-          end
-          options_string = options_string[0..-2]
-          options_string.gsub!(/\s/,"%20")
-          return "#{url_for_base}/reports/#{which_report}?#{options_string}"
-        end
+      def url_for_query(which_report = 'BalanceSheet', date_macro = nil, options = {})
+        date_macro_string = date_macro && "date_macro=#{URI.encode_www_form_component(date_macro)}"
+        query_params_array = options.map { |key, value| "#{key}=#{URI.encode_www_form_component(value)}" }
+        query_params_array.unshift(date_macro_string) if date_macro_string
+        query_string = query_params_array.length > 0 ? "?#{query_params_array.join('&')}" : ''
+        "#{url_for_base}/reports/#{which_report}#{query_string}"
       end
 
       def query(object_query = 'BalanceSheet', date_macro = 'This Fiscal Year-to-date', options = {})
